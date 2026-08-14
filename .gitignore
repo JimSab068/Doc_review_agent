@@ -11,6 +11,7 @@ infra/vault/vault_iam_policy.generated.json
 tests/integration/
 tests/personas_1/
 tests/personas/
+tests/generated_personas/pdfs/
 
 notes.md
 readme_old.md
