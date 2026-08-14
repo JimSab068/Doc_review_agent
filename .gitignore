@@ -1,0 +1,40 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+atlas-credentials.env
+chroma-server.pem
+scripts/
+tests/cloud/
+infra/vault/vault_iam_policy.generated.json
+tests/integration/
+tests/personas_1/
+tests/personas/
+
+notes.md
+readme_old.md
+
+
+# Environments
+venv/
+.env
+
+# Python build and cache noise
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local runtime outputs and checkpoints
+artifacts/evaluations/_checkpoints/
+audit_log_fallback.jsonl
+
+# Exclude all evaluation artifacts by default...
+artifacts/evaluations/*.json
+artifacts/evaluations/*.md
+
+# ...but explicitly allow the curated before/after runs
+!artifacts/evaluations/final_143_run.json
+!artifacts/evaluations/final_143_run.md
+!artifacts/evaluations/baseline_143_run.json
+!artifacts/evaluations/baseline_143_run.md
