@@ -7,20 +7,23 @@ atlas-credentials.env
 chroma-server.pem
 scripts/
 tests/cloud/
-infra/vault/vault_iam_policy.generated.json
+infra/vault/*.json
 tests/integration/
 tests/personas_1/
 tests/personas/
 tests/generated_personas/pdfs/
 
+data/outliers/
+
 notes.md
 readme_old.md
 
-
+chech_env.py
 # Environments
 venv/
 .env
-
+requirements_old.txt
+scripts/
 # Python build and cache noise
 __pycache__/
 *.pyc
@@ -33,9 +36,15 @@ audit_log_fallback.jsonl
 # Exclude all evaluation artifacts by default...
 artifacts/evaluations/*.json
 artifacts/evaluations/*.md
+fixtures/
+infra
 
 # ...but explicitly allow the curated before/after runs
 !artifacts/evaluations/final_143_run.json
 !artifacts/evaluations/final_143_run.md
 !artifacts/evaluations/baseline_143_run.json
 !artifacts/evaluations/baseline_143_run.md
+artifacts/golden_cloud/*.json
+*.sh
+.github/workflows/
+
