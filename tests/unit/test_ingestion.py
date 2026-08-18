@@ -142,9 +142,8 @@ class TestIngestPdf:
             mock_pdf.pages = [mock_page]
             mock_open.return_value.__enter__.return_value = mock_pdf
 
-            doc = ingest_pdf(str(pdf_path), DocumentType.LOAN_APPLICATION)
-            assert len(doc.pages) == 1
-            assert doc.pages[0].text == ""
+            with pytest.raises(ValueError, match="no text layer found"):
+                    ingest_pdf(str(pdf_path), DocumentType.LOAN_APPLICATION)
 
     def test_raises_value_error_when_pdf_has_zero_pages(self, tmp_path):
         """Simulates a PDF with zero pages to trigger the 'if not pages' ValueError branch."""

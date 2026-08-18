@@ -27,8 +27,17 @@ class MockGeminiEmbeddingFunction:
 
 @pytest.fixture(autouse=True)
 def mock_ambient_env():
-    """Ensures the environment check passes during unit testing without real keys."""
-    with patch.dict(os.environ, {"GEMINI_API_KEY": "mock-local-test-key"}):
+    with patch.dict(
+        os.environ,
+        {
+            "GEMINI_API_KEY": "mock-local-test-key",
+        },
+        clear=False,
+    ):
+        os.environ.pop("CHROMA_HOST", None)
+        os.environ.pop("CHROMA_PORT", None)
+        os.environ.pop("CHROMA_SSL", None)
+
         yield
 
 @pytest.fixture

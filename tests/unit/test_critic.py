@@ -35,7 +35,14 @@ class MockGeminiEmbeddingFunction:
 
 @pytest.fixture(autouse=True)
 def mock_ambient_env():
-    with patch.dict(os.environ, {"GEMINI_API_KEY": "mock-local-test-key"}):
+    with patch.dict(
+        os.environ,
+        {"GEMINI_API_KEY": "mock-local-test-key"},
+        clear=False,
+    ):
+        os.environ.pop("CHROMA_HOST", None)
+        os.environ.pop("CHROMA_PORT", None)
+        os.environ.pop("CHROMA_SSL", None)
         yield
 
 
@@ -52,8 +59,13 @@ def mock_gemini_embedding():
 def seeded_kb():
     kb = ComplianceKB(collection_name="test_critic_kb")
     kb.seed_initial_compliance_data(REG_B_FCRA_FIXTURES)
-    return kb
 
+    yield kb
+
+    try:
+        kb.client.delete_collection(kb.collection.name)
+    except Exception:
+        pass
 
 def make_llm_response(response_text: str):
     resp = MagicMock()
