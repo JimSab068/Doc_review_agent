@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import inspect
+import logging
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -8,7 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 # top of file, alongside other imports
 from src.primary_agent import PrimaryAgent
 from src.ingestion import ingest_pdf
-from src.audit_log import AuditLogIntegrityError
+from src.audit_log import AuditLogIntegrityError, AuditLogWriteError
 from src.schemas import (
     AuditLogEntry,
     Document as PipelineDoc,
@@ -16,6 +17,8 @@ from src.schemas import (
     RoutingDecision,
     Page
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SecureAuditPipeline:
@@ -191,8 +194,22 @@ class SecureAuditPipeline:
                     # calling execute_pdf/execute_doc, same fail-closed
                     # posture as the vault's PII leak gate.
                     raise
-                except Exception as exc:
-                    print(f"[audit_log] WARNING: {exc}")
+                except AuditLogWriteError as exc:
+                    # The entry IS safely on disk in the local fallback log
+                    # at this point (AuditLogWriter.write guarantees that
+                    # before raising) -- but a durable audit trail that has
+                    # silently degraded to a container-local file nobody is
+                    # watching is itself a compliance gap for this system.
+                    # Log loudly and fail the request rather than returning
+                    # 200 with a decision that never reached Atlas -- a
+                    # printed warning here previously meant this failure
+                    # was only visible by grepping ECS logs after the fact.
+                    logger.error(
+                        "[audit_log] Primary audit store write failed; entry "
+                        "preserved in local fallback log only, not Atlas: %s",
+                        exc,
+                    )
+                    raise
 
             final_payload = {
                 "doc_id": doc.doc_id,
@@ -360,8 +377,19 @@ class SecureAuditPipeline:
                     # not a durability hiccup, so it must propagate rather
                     # than be logged and swallowed.
                     raise
-                except Exception as exc:
-                    print(f"[audit_log] WARNING: {exc}")
+                except AuditLogWriteError as exc:
+                    # Same reasoning as execute_doc: the entry is safe in
+                    # the local fallback file, but a degraded audit trail
+                    # nobody is alerted on is still a compliance gap. Log
+                    # loudly and fail the request instead of silently
+                    # returning 200 with a decision that never reached
+                    # Atlas.
+                    logger.error(
+                        "[audit_log] Primary audit store write failed; entry "
+                        "preserved in local fallback log only, not Atlas: %s",
+                        exc,
+                    )
+                    raise
 
             final_payload = {
                 "doc_id": doc.doc_id,
