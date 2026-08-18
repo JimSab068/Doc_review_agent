@@ -48,3 +48,5 @@ artifacts/golden_cloud/*.json
 *.sh
 .github/workflows/
 
+
+tests/golden_set/*.json
